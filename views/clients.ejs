@@ -1,0 +1,31 @@
+<h2>Clients</h2>
+
+<a href="/clients/new" class="btn btn-add">Ajouter un client</a>
+
+<table class="client-table">
+  <thead>
+  <tr>
+    <th>Nom</th>
+    <th>Email</th>
+    <th>Téléphone</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+  <% clients.forEach(c => { %>
+    <tr>
+      <td><%= c.name %></td>
+      <td><%= c.email %></td>
+      <td><%= c.phone %></td>
+      <td class="actions">
+        <a href="/clients/<%= c.id %>/edit" class="btn btn-edit">Modifier</a>
+
+        <form action="/clients/<%= c.id %>?_method=DELETE" method="POST" style="display:inline;">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-delete">Supprimer</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>

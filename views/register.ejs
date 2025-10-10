@@ -1,0 +1,29 @@
+<form id="registerForm" method="POST" action="/register">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="text" name="name" placeholder="Nom" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="password" placeholder="Mot de passe" required>
+  <button type="submit">S’inscrire</button>
+</form>
+
+<script>
+  document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const form = e.target;
+    const email = form.email.value.trim();
+    const password = form.password.value;
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      alert('Email invalide.');
+      e.preventDefault();
+      return;
+    }
+
+    if (!passwordRegex.test(password)) {
+      alert('Mot de passe doit contenir 8+ caractères, maj, min, chiffre et symbole.');
+      e.preventDefault();
+      return;
+    }
+  });
+</script>

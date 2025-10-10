@@ -1,0 +1,7 @@
+<h2>Bienvenue sur Mini CRM</h2>
+
+<% if(!currentUser) { %>
+    <p>Veuillez vous <a href="/login">connecter</a> ou vous <a href="/register">vous inscrire</a>.</p>
+<% } else { %>
+    <p>Accédez à vos <a href="/clients">clients</a> ou vos <a href="/appointments">rendez-vous</a>.</p>
+<% } %>
