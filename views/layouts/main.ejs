@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- Header / Navigation -->
+<header>
+    <h1>Mini CRM</h1>
+    <nav>
+        <% if (currentUser) { %>
+            <% if (currentPath !== '/') { %>
+                <a href="/">Accueil</a> |
+            <% } %>
+            <a href="/clients">Clients</a> |
+            <a href="/appointments">Rendez-vous</a> |
+            <span class="user-info">Connecté : <strong><%= currentUser.name %></strong></span> |
+
+            <!-- Formulaire déconnexion sécurisé avec CSRF -->
+            <form action="/logout" method="POST" class="inline-form" style="display:inline;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit">Déconnexion</button>
+            </form>
+        <% } else { %>
+            <% if (currentPath !== '/') { %>
+                <a href="/">Accueil</a> |
+            <% } %>
+            <a href="/login">Connexion</a> |
+            <a href="/register">Inscription</a>
+        <% } %>
+    </nav>
+</header>
+
+<!-- Flash messages -->
+<div class="container">
+    <% if (success) { %>
+        <div class="flash success"><%= success %></div>
+    <% } %>
+    <% if (error) { %>
+        <div class="flash error"><%= error %></div>
+    <% } %>
+
+    <!-- Contenu spécifique à la page -->
+    <%- body %>
+</div>
+
+<!-- Footer -->
+<footer>
+    <p>&copy; <%= new Date().getFullYear() %> Mini CRM</p>
+</footer>
+
+<!-- JS -->
+<script src="/public/js/validation.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<h2><%= client ? 'Modifier le client' : 'Nouveau client' %></h2>
+
+<form action="<%= client ? '/clients/' + client.id + '?_method=PUT' : '/clients' %>" method="POST">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>Nom :</label>
+  <input type="text" name="name" value="<%= client?.name || '' %>" required>
+
+  <label>Email :</label>
+  <input type="email" name="email" value="<%= client?.email || '' %>" required>
+
+  <label>Téléphone :</label>
+  <input type="text" name="phone" value="<%= client?.phone || '' %>">
+
+  <button type="submit">Enregistrer</button>
+</form>
+
+<a href="/clients">Retour à la liste</a>

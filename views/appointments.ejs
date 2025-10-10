@@ -1,0 +1,29 @@
+<h2>Rendez-vous</h2>
+
+<a href="/appointments/new" class="btn btn-add">Ajouter un rendez-vous</a>
+
+<table class="appointments-table">
+    <thead>
+    <tr>
+        <th>Client</th>
+        <th>Date et heure</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% appointments.forEach(a => { %>
+        <tr>
+            <td><%= a.Client.name %></td>
+            <td><%= a.datetime.toLocaleString() %></td>
+            <td class="actions">
+                <a href="/appointments/<%= a.id %>/edit" class="btn btn-edit">Modifier</a>
+
+                <form action="/appointments/<%= a.id %>?_method=DELETE" method="POST" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn-delete">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+    <% }) %>
+    </tbody>
+</table>

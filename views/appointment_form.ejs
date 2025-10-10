@@ -1,0 +1,19 @@
+<h2><%= appointment ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous' %></h2>
+
+<form action="<%= appointment ? '/appointments/' + appointment.id + '?_method=PUT' : '/appointments' %>" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label>Client :</label>
+    <select name="clientId" required>
+        <% clients.forEach(c => { %>
+            <option value="<%= c.id %>" <%= appointment && c.id === appointment.ClientId ? 'selected' : '' %>><%= c.name %></option>
+        <% }) %>
+    </select>
+
+    <label>Date et heure :</label>
+    <input type="datetime-local" name="datetime" value="<%= appointment ? appointment.datetime.toISOString().slice(0,16) : '' %>" required>
+
+    <button type="submit">Enregistrer</button>
+</form>
+
+<a href="/appointments">Retour à la liste</a>

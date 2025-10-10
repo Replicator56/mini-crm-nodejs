@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <it.title>Mini CRM</it.title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<%- include('partials/header') %>
+
+<div class="container">
+    <% if (it.success) { %>
+        <div class="flash it.success"><%= it.success %></div>
+    <% } %>
+    <% if (it.error) { %>
+        <div class="flash it.error"><%= it.error %></div>
+    <% } %>
+
+    <!-- Contenu spécifique à chaque page -->
+    <%- body %>
+</div>
+
+<%- include('partials/footer') %>
+</body>
+</html>
