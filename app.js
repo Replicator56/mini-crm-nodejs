@@ -274,10 +274,16 @@ app.delete('/appointments/:id', ensureAuthenticated, async (req, res) => {
 app.use((err, req, res, next) => {
     if (err && err.code === 'EBADCSRFTOKEN') {
         req.flash('error', 'Formulaire expiré ou invalide (CSRF).');
-        return res.redirect('back');
+
+        const referrer = req.get('Referrer');
+        const sameOrigin = referrer &&
+            referrer.startsWith(`${req.protocol}://${req.get('host')}`);
+
+        return res.redirect(sameOrigin ? referrer : '/');
     }
     next(err);
 });
+
 
 // --- Global error handler ---
 app.use((err, req, res, next) => {
@@ -290,7 +296,7 @@ app.use((err, req, res, next) => {
     try {
         await sequelize.sync();
         console.log('DB synced');
-        app.listen(PORT, () => console.log(`✅ Server started on http://localhost:${PORT} (env=${NODE_ENV})`));
+        app.listen(PORT, () => console.log(`Server started on http://localhost:${PORT} (env=${NODE_ENV})`));
     } catch (err) {
         console.error('Erreur au démarrage:', err);
     }
