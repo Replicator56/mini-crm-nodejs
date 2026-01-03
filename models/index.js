@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { Sequelize, DataTypes, Op } from 'sequelize';
-import UserModel from './User.js';
-import ClientModel from './Client.js';
-import AppointmentModel from './Appointment.js';
+import UserModel from './user.js';
+import ClientModel from './client.js';
+import AppointmentModel from './appointment.js';
 
 const sequelize = new Sequelize(
     process.env.DB_NAME,
@@ -11,7 +11,12 @@ const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST,
         dialect: 'mssql',
-        dialectOptions: { options: { encrypt: true } },
+        dialectOptions: {
+            options: {
+                encrypt: true,
+                trustServerCertificate: true
+            }
+        },
         logging: false,
     }
 );

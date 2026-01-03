@@ -57,7 +57,7 @@ import bcrypt from 'bcrypt';
 
         await Appointment.bulkCreate(appointmentsData);
 
-        console.log('Seed complet terminé avec succès ! ✅');
+        console.log('Seed complet terminé avec succès !');
         process.exit(0);
     } catch (err) {
         console.error('Erreur lors du seed:', err);
