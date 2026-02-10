@@ -16,7 +16,7 @@
     "ejs",
     "sequelize"
   ],
-  "author": "TonNom",
+  "author": "FLBo",
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^5.1.1",

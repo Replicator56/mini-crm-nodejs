@@ -3,6 +3,8 @@ import { Sequelize, DataTypes, Op } from 'sequelize';
 import UserModel from './user.js';
 import ClientModel from './client.js';
 import AppointmentModel from './appointment.js';
+import AppointmentClientModel from './appointmentClient.js';
+
 
 const sequelize = new Sequelize(
     process.env.DB_NAME,
@@ -25,10 +27,24 @@ const sequelize = new Sequelize(
 const User = UserModel(sequelize, DataTypes);
 const Client = ClientModel(sequelize, DataTypes);
 const Appointment = AppointmentModel(sequelize, DataTypes);
+const AppointmentClient = AppointmentClientModel(sequelize, DataTypes);
 
-// Associations
-Client.hasMany(Appointment, { foreignKey: 'clientId', onDelete: 'CASCADE' });
-Appointment.belongsTo(Client, { foreignKey: 'clientId' });
+// Responsable (1-N)
+User.hasMany(Appointment, { foreignKey: 'userId' });
+Appointment.belongsTo(User, { foreignKey: 'userId' });
+
+// Participants (N-N)
+Client.belongsToMany(Appointment, {
+  through: AppointmentClient,
+  foreignKey: 'clientId',
+  otherKey: 'appointmentId'
+});
+
+Appointment.belongsToMany(Client, {
+  through: AppointmentClient,
+  foreignKey: 'appointmentId',
+  otherKey: 'clientId'
+});
 
 // Export
-export { sequelize, Sequelize, Op, User, Client, Appointment };
+export { sequelize, Sequelize, Op, User, Client, Appointment,AppointmentClient };

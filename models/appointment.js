@@ -1,4 +1,4 @@
-// Appointment.js
+// appointment.js
 export default (sequelize, DataTypes) => {
     return sequelize.define('Appointment', {
         datetime: {
@@ -8,6 +8,10 @@ export default (sequelize, DataTypes) => {
         notes: {
             type: DataTypes.TEXT,
             allowNull: true
+        },
+        userId:{
+            type: DataTypes.INTEGER,
+            allowNull:false
         }
     });
 };

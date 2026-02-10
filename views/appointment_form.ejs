@@ -1,19 +1,49 @@
 <h2><%= appointment ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous' %></h2>
 
 <form action="<%= appointment ? '/appointments/' + appointment.id + '?_method=PUT' : '/appointments' %>" method="POST">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-    <label>Client :</label>
-    <select name="clientId" required>
-        <% clients.forEach(c => { %>
-            <option value="<%= c.id %>" <%= appointment && c.id === appointment.ClientId ? 'selected' : '' %>><%= c.name %></option>
-        <% }) %>
-    </select>
+  <% 
+    // ids des clients déjà liés (mode édition) - convertis en string pour comparer sans souci de type
+    const selectedIdStr = appointment && appointment.Clients
+      ? appointment.Clients.map(c => String(c.id))
+      : [];
 
-    <label>Date et heure :</label>
-    <input type="datetime-local" name="datetime" value="<%= appointment ? appointment.datetime.toISOString().slice(0,16) : '' %>" required>
+    // Pré-remplissage date/heure (mode édition)
+    const d = appointment && appointment.datetime ? new Date(appointment.datetime) : null;
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const dateVal = d ? `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}` : '';
+    const timeVal = d ? `${pad2(d.getHours())}:${pad2(d.getMinutes())}` : '';
 
-    <button type="submit">Enregistrer</button>
+    // Responsable : en édition => appointment.User, en création => currentUser (session)
+    const ownerName = appointment && appointment.User
+      ? appointment.User.name
+      : (currentUser ? currentUser.name : '—');
+  %>
+
+  <label>Responsable :</label>
+  <input type="text" value="<%= ownerName %>" readonly>
+
+  <label>Client(s) :</label>
+  <select name="clientIds" multiple required size="6">
+    <% clients.forEach(c => { %>
+      <option value="<%= c.id %>" <%= selectedIdStr.includes(String(c.id)) ? 'selected' : '' %>>
+        <%= c.name %>
+      </option>
+    <% }) %>
+  </select>
+  <small>Astuce : Ctrl (ou Cmd) + clic pour sélectionner plusieurs clients.</small>
+
+  <label>Date :</label>
+  <input type="date" name="date" value="<%= dateVal %>" required>
+
+  <label>Heure :</label>
+  <input type="time" name="time" value="<%= timeVal %>" required>
+
+  <label>Notes :</label>
+  <textarea name="notes" rows="3"><%= appointment && appointment.notes ? appointment.notes : '' %></textarea>
+
+  <button type="submit">Enregistrer</button>
 </form>
 
 <a href="/appointments">Retour à la liste</a>

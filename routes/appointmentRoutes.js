@@ -1,20 +1,24 @@
+// routes/appointmentRoutes.js
 import express from 'express';
 import {
-    listAppointments,
-    showAppointmentForm,
-    createAppointment,
-    updateAppointment,
-    deleteAppointment
+  listAppointments,
+  showAppointmentForm,
+  createAppointment,
+  updateAppointment,
+  deleteAppointment,
 } from '../controllers/appointmentController.js';
+
 import { ensureAuthenticated } from '../middlewares/authMiddleware.js';
+import { ensureAppointmentOwner } from '../middlewares/appointmentOwnerMiddleware.js';
 
 const router = express.Router();
 
 router.get('/', ensureAuthenticated, listAppointments);
 router.get('/new', ensureAuthenticated, showAppointmentForm);
 router.post('/', ensureAuthenticated, createAppointment);
-router.get('/:id/edit', ensureAuthenticated, showAppointmentForm);
-router.put('/:id', ensureAuthenticated, updateAppointment);
-router.delete('/:id', ensureAuthenticated, deleteAppointment);
+
+router.get('/:id/edit', ensureAuthenticated, ensureAppointmentOwner, showAppointmentForm);
+router.put('/:id', ensureAuthenticated, ensureAppointmentOwner, updateAppointment);
+router.delete('/:id', ensureAuthenticated, ensureAppointmentOwner, deleteAppointment);
 
 export default router;
