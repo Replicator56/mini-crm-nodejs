@@ -24,7 +24,7 @@ function makeReq(overrides = {}) {
       notes: "test",
       clientIds: ["1", "2"],
     },
-    session: { userId: 1 },
+    session: { user: { id: 1 } },
     flash: vi.fn(),
     ...overrides,
   };
