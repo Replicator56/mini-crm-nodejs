@@ -2,7 +2,7 @@ import { Appointment, Client, User } from '../models/index.js';
 
 export async function ensureAppointmentOwner(req, res, next) {
   try {
-    const userId = req.session?.userId;
+    const userId = req.session?.user?.id ?? null;
 
     if (!userId) {
       req.flash('error', 'Veuillez vous connecter.');
@@ -18,7 +18,7 @@ export async function ensureAppointmentOwner(req, res, next) {
       return res.redirect('/appointments');
     }
 
-    if (appointment.userId !== userId) {
+    if (Number(appointment.userId) !== Number(userId)) {
       req.flash('error', 'Accès refusé : vous n’êtes pas le responsable de ce rendez-vous.');
       return res.redirect('/appointments');
     }

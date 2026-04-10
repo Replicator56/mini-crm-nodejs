@@ -67,7 +67,7 @@ export const showAppointmentForm = async (req, res, next) => {
 
 export const createAppointment = async (req, res, next) => {
   try {
-    const userId = req.session?.userId ?? null;
+    const userId = req.session?.user?.id ?? null;
 
     if (!userId) {
       req.flash('error', 'Vous devez être connecté pour créer un rendez-vous.');
