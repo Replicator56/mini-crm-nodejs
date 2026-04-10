@@ -4,28 +4,41 @@
 
 <table class="client-table">
   <thead>
-  <tr>
-    <th>Nom</th>
-    <th>Email</th>
-    <th>Téléphone</th>
-    <th>Actions</th>
-  </tr>
+    <tr>
+      <th>Nom</th>
+      <th>Email</th>
+      <th>Téléphone</th>
+      <th>Actions</th>
+    </tr>
   </thead>
   <tbody>
-  <% clients.forEach(c => { %>
-    <tr>
-      <td><%= c.name %></td>
-      <td><%= c.email %></td>
-      <td><%= c.phone %></td>
-      <td class="actions">
-        <a href="/clients/<%= c.id %>/edit" class="btn btn-edit">Modifier</a>
+    <% clients.forEach(c=> { %>
+      <tr>
+        <td title="<%= c.name %>">
+          <%= c.name %>
+        </td>
+        <td title="<%= c.email %>">
+          <%= c.email %>
+        </td>
+        <td title="<%= c.phone %>">
+          <%= c.phone %>
+        </td>
+        <td class="actions">
+          <div class="table-actions">
+            <a href="/clients/<%= c.id %>/edit" class="table-action-link table-action-edit">
+              Détails
+            </a>
 
-        <form action="/clients/<%= c.id %>?_method=DELETE" method="POST" style="display:inline;">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button type="submit" class="btn btn-delete">Supprimer</button>
-        </form>
-      </td>
-    </tr>
-  <% }) %>
+            <form action="/clients/<%= c.id %>?_method=DELETE" method="POST"
+              class="table-action-form delete-form-client">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="table-action-button table-action-delete">
+                Supprimer
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
   </tbody>
 </table>

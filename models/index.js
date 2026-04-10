@@ -5,23 +5,38 @@ import ClientModel from './client.js';
 import AppointmentModel from './appointment.js';
 import AppointmentClientModel from './appointmentClient.js';
 
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const isTest = NODE_ENV === 'test';
 
-const sequelize = new Sequelize(
+let sequelize;
+
+if (isTest) {
+  // Base de données rapide pour les tests
+  sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: ':memory:',
+    logging: false,
+  });
+} else {
+  // MSSQL pour dev / prod (Docker)
+  sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
     process.env.DB_PASSWORD,
     {
-        host: process.env.DB_HOST,
-        dialect: 'mssql',
-        dialectOptions: {
-            options: {
-                encrypt: true,
-                trustServerCertificate: true
-            }
-        },
-        logging: false,
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 1433,
+      dialect: 'mssql',
+      dialectOptions: {
+        options: {
+          encrypt: process.env.DB_ENCRYPT === 'true',
+          trustServerCertificate: true
+        }
+      },
+      logging: false,
     }
-);
+  );
+}
 
 // Initialisation des modèles
 const User = UserModel(sequelize, DataTypes);

@@ -1,31 +1,30 @@
 <h2><%= appointment ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous' %></h2>
 
-<form action="<%= appointment ? '/appointments/' + appointment.id + '?_method=PUT' : '/appointments' %>" method="POST">
+<form id="appointmentForm" action="<%= appointment ? '/appointments/' + appointment.id + '?_method=PUT' : '/appointments' %>" method="POST">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
   <% 
-    // ids des clients déjà liés (mode édition) - convertis en string pour comparer sans souci de type
     const selectedIdStr = appointment && appointment.Clients
       ? appointment.Clients.map(c => String(c.id))
       : [];
 
-    // Pré-remplissage date/heure (mode édition)
     const d = appointment && appointment.datetime ? new Date(appointment.datetime) : null;
     const pad2 = (n) => String(n).padStart(2, '0');
     const dateVal = d ? `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}` : '';
     const timeVal = d ? `${pad2(d.getHours())}:${pad2(d.getMinutes())}` : '';
 
-    // Responsable : en édition => appointment.User, en création => currentUser (session)
     const ownerName = appointment && appointment.User
       ? appointment.User.name
       : (currentUser ? currentUser.name : '—');
+
+    const todayStr = new Date().toISOString().slice(0, 10);
   %>
 
-  <label>Responsable :</label>
-  <input type="text" value="<%= ownerName %>" readonly>
+  <label for="ownerName">Responsable :</label>
+  <input type="text" id="ownerName" value="<%= ownerName %>" readonly>
 
-  <label>Client(s) :</label>
-  <select name="clientIds" multiple required size="6">
+  <label for="clientIds">Client(s) :</label>
+  <select id="clientIds" name="clientIds" multiple required size="6">
     <% clients.forEach(c => { %>
       <option value="<%= c.id %>" <%= selectedIdStr.includes(String(c.id)) ? 'selected' : '' %>>
         <%= c.name %>
@@ -34,14 +33,35 @@
   </select>
   <small>Astuce : Ctrl (ou Cmd) + clic pour sélectionner plusieurs clients.</small>
 
-  <label>Date :</label>
-  <input type="date" name="date" value="<%= dateVal %>" required>
+  <label for="date">Date :</label>
+  <input
+    type="date"
+    id="date"
+    name="date"
+    value="<%= dateVal %>"
+    min="<%= todayStr %>"
+    required
+  >
 
-  <label>Heure :</label>
-  <input type="time" name="time" value="<%= timeVal %>" required>
+  <label for="time">Heure :</label>
+  <select id="time" name="time" required>
+    <option value="">-- Choisir une heure --</option>
+    <% for (let hour = 8; hour <= 19; hour++) { %>
+      <% for (let minute = 0; minute < 60; minute += 15) { %>
+        <% 
+          if (hour === 19 && minute > 0) break;
+          const optionTime = `${pad2(hour)}:${pad2(minute)}`;
+        %>
+        <option value="<%= optionTime %>" <%= timeVal === optionTime ? 'selected' : '' %>>
+          <%= optionTime %>
+        </option>
+      <% } %>
+    <% } %>
+  </select>
+  <small>Créneaux disponibles de 08:00 à 19:00, par pas de 15 minutes.</small>
 
-  <label>Notes :</label>
-  <textarea name="notes" rows="3"><%= appointment && appointment.notes ? appointment.notes : '' %></textarea>
+  <label for="notes">Notes :</label>
+  <textarea id="notes" name="notes" rows="3"><%= appointment && appointment.notes ? appointment.notes : '' %></textarea>
 
   <button type="submit">Enregistrer</button>
 </form>

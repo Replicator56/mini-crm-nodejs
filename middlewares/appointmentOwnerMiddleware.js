@@ -1,9 +1,8 @@
-// middlewares/appointmentOwnerMiddleware.js
 import { Appointment, Client, User } from '../models/index.js';
 
 export async function ensureAppointmentOwner(req, res, next) {
   try {
-    const userId = req.session?.user?.id;
+    const userId = req.session?.userId;
 
     if (!userId) {
       req.flash('error', 'Veuillez vous connecter.');
@@ -24,7 +23,6 @@ export async function ensureAppointmentOwner(req, res, next) {
       return res.redirect('/appointments');
     }
 
-    // On met l'objet déjà chargé à disposition du controller
     req.appointment = appointment;
     return next();
   } catch (err) {

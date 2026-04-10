@@ -13,37 +13,44 @@
   </thead>
 
   <tbody>
-    <% appointments.forEach(a => { %>
+    <% appointments.forEach(a=> { %>
       <tr>
-        <td>
+        <td title="<%= a.Clients && a.Clients.length ? a.Clients.map(c => c.name).join(', ') : '—' %>">
           <% if (a.Clients && a.Clients.length) { %>
-            <%= a.Clients.map(c => c.name).join(', ') %>
-          <% } else { %>
-            —
-          <% } %>
+            <%= a.Clients.map(c=> c.name).join(', ') %>
+              <% } else { %>
+                —
+                <% } %>
         </td>
 
-        <td>
+        <td title="<%= a.User ? a.User.name : '—' %>">
           <%= a.User ? a.User.name : '—' %>
         </td>
 
-        <td>
+        <td title="<%= a.datetime ? new Date(a.datetime).toLocaleString() : '—' %>">
           <%= a.datetime ? new Date(a.datetime).toLocaleString() : '—' %>
         </td>
 
         <td class="actions">
-          <% if (currentUser && a.userId === currentUser.id) { %>
-            <a href="/appointments/<%= a.id %>/edit" class="btn btn-edit">Modifier</a>
+          <% if (currentUser && a.userId===currentUser.id) { %>
+            <div class="table-actions">
+              <a href="/appointments/<%= a.id %>/edit" class="table-action-link table-action-edit">
+                Détails
+              </a>
 
-            <form action="/appointments/<%= a.id %>?_method=DELETE" method="POST" style="display:inline;">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <button type="submit" class="btn btn-delete">Supprimer</button>
-            </form>
-          <% } else { %>
-            <span>—</span>
-          <% } %>
+              <form action="/appointments/<%= a.id %>?_method=DELETE" method="POST"
+                class="table-action-form delete-form-appointment">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="table-action-button table-action-delete">
+                  Supprimer
+                </button>
+              </form>
+            </div>
+            <% } else { %>
+              <span>—</span>
+              <% } %>
         </td>
       </tr>
-    <% }) %>
+      <% }) %>
   </tbody>
 </table>

@@ -388,7 +388,9 @@ app.use((err, req, res, next) => {
   res.status(500).render('error_500', { title: 'Erreur 500' });
 });
 
-// --- Start server ---
+export default app;
+
+/* // --- Start server ---
 (async () => {
   try {
     await sequelize.sync();
@@ -399,4 +401,4 @@ app.use((err, req, res, next) => {
   } catch (err) {
     console.error('Erreur au démarrage:', err);
   }
-})();
+})(); */

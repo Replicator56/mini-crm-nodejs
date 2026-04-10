@@ -88,7 +88,7 @@ form textarea {
     font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 6px;
-    transition: border 0.2s;
+    transition: border-color 0.2s;
 }
 
 form input:focus,
@@ -98,7 +98,7 @@ form textarea:focus {
     outline: none;
 }
 
-form button {
+form > button {
     margin-top: 20px;
     padding: 12px;
     background-color: #4CAF50;
@@ -108,10 +108,10 @@ form button {
     cursor: pointer;
     font-weight: bold;
     font-size: 1rem;
-    transition: background 0.2s;
+    transition: background-color 0.2s, transform 0.2s ease;
 }
 
-form button:hover {
+form > button:hover {
     background-color: #45a049;
 }
 
@@ -137,44 +137,216 @@ ul li button {
     font-size: 0.9rem;
 }
 
+/* Tables générales */
 table {
     width: 100%;
     border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
     padding: 10px;
     border: 1px solid #ddd;
     text-align: left;
 }
 
+/* Table clients */
+.client-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin-top: 15px;
+}
+
+.client-table th,
+.client-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.client-table th:nth-child(1),
+.client-table td:nth-child(1) {
+    width: 25%;
+}
+
+.client-table th:nth-child(2),
+.client-table td:nth-child(2) {
+    width: 30%;
+}
+
+.client-table th:nth-child(3),
+.client-table td:nth-child(3) {
+    width: 20%;
+}
+
+.client-table th:nth-child(4),
+.client-table td:nth-child(4) {
+    width: 25%;
+}
+
+.client-table td:not(.actions) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Table rendez-vous */
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin-top: 15px;
+}
+
+.appointments-table th,
+.appointments-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.appointments-table th:nth-child(1),
+.appointments-table td:nth-child(1) {
+    width: 30%;
+}
+
+.appointments-table th:nth-child(2),
+.appointments-table td:nth-child(2) {
+    width: 20%;
+}
+
+.appointments-table th:nth-child(3),
+.appointments-table td:nth-child(3) {
+    width: 25%;
+}
+
+.appointments-table th:nth-child(4),
+.appointments-table td:nth-child(4) {
+    width: 25%;
+}
+
+.appointments-table td:not(.actions) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Colonne actions */
 td.actions {
-    text-align: center; /* centre les boutons dans la colonne */
+    text-align: right;
+    white-space: nowrap;
 }
 
-td.actions .inline-form {
-    display: inline; /* garde le bouton supprimer sur la même ligne que modifier */
+/* Actions tableau */
+.table-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
 }
 
+.table-action-form {
+    display: block;
+    margin: 0;
+}
+
+.table-action-link,
+.table-action-button {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    color: white;
+    margin: 0;
+    font-family: inherit;
+    font-weight: normal;
+    transition: background-color 0.2s, transform 0.2s ease;
+}
+
+/* Modifier */
+.table-action-link,
+.table-action-edit {
+    background-color: #4CAF50;
+}
+
+.table-action-link:hover,
+.table-action-edit:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+}
+
+.table-action-link:active,
+.table-action-edit:active {
+    transform: translateY(0);
+}
+
+/* Supprimer */
+.table-action-button,
+.table-action-delete {
+    background-color: #f44336;
+}
+
+.table-action-button:hover,
+.table-action-delete:hover {
+    background-color: #d32f2f;
+    transform: translateY(-1px);
+}
+
+.table-action-button:active,
+.table-action-delete:active {
+    transform: translateY(0);
+}
+
+/* Boutons généraux */
 .btn {
+    display: inline-block;
     padding: 5px 10px;
     margin: 0 2px;
     text-decoration: none;
     border-radius: 3px;
     font-size: 0.9em;
     cursor: pointer;
+    border: none;
+    color: white;
+    transition: background-color 0.2s, transform 0.2s ease;
 }
 
-.btn-edit {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
+.btn:hover {
+    transform: translateY(-1px);
 }
 
-.btn-delete {
-    background-color: #f44336;
-    color: white;
-    border: none;
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-add {
+    background-color: #2196F3;
+}
+
+/* Effet focus */
+.table-action-link:focus,
+.table-action-button:focus,
+.btn:focus {
+    outline: 2px solid #333;
+    outline-offset: 2px;
+}
+
+/* Amélioration du tableau */
+.client-table tbody tr:hover td,
+.appointments-table tbody tr:hover td {
+    background-color: #eaf3ff;
+    transition: background-color 0.15s ease;
+}
+
+.table-action-delete {
+    position: relative;
 }
 
 /* Flash messages */
@@ -217,5 +389,22 @@ td.actions .inline-form {
     ul li button {
         margin-left: 0;
         margin-top: 5px;
+    }
+
+    .client-table,
+    .appointments-table {
+        table-layout: auto;
+    }
+
+    .client-table th,
+    .client-table td,
+    .appointments-table th,
+    .appointments-table td {
+        font-size: 0.9rem;
+    }
+
+    .table-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
     }
 }
