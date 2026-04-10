@@ -1,84 +1,65 @@
-# Mini CRM – Node.js / Sequelize / SQL Server
-Mini CRM développé en **Node.js** avec **Sequelize ORM** et **Microsoft SQL Server** exécuté via **Docker**.
+# Mini CRM
 
+Application web de gestion de clients et de rendez-vous développée en **Node.js**, **Express**, **EJS** et **Sequelize**, avec une base **Microsoft SQL Server** exécutée via **Docker**.
 
-## Prérequis
-- Node.js ≥ 18
-- npm
-- Docker + Docker Compose
-- VS Code (optionnel, avec extension SQL Server)
+---
 
-## Installation & Lancement
+## Objectif du projet
 
-# Cloner le projet
-git clone https://github.com/Replicator56/mini-crm-nodejs.git
-cd mini-crm-nodejs
+Ce projet a été réalisé dans le cadre d’une préparation de soutenance CDA (Concepteur Développeur d’Applications).
 
-# Installer les dépendances
-npm install
+Il permet de :
 
-# Créer le fichier .env
-DB_NAME=mini_crm
-DB_USER=sa
-DB_PASSWORD=XXXXXXXXX
-DB_HOST=localhost
-PORT=3000
+- gérer des clients ;
+- gérer des rendez-vous ;
+- associer un ou plusieurs clients à un rendez-vous ;
+- sécuriser l’accès à l’application ;
+- préparer un déploiement simple et sécurisé.
 
-# Lancer SQL Server avec Docker Compose
-docker compose up -d
+---
 
-# Créer la base de données (une seule fois)
-# Via VS Code (extension SQL Server) ou tout autre client SQL
-CREATE DATABASE mini_crm;
-GO
+## Stack technique
 
-# Lancer l’application
-npm start
- ou en mode developpement
-npm run dev
+- **Back-end** : Node.js, Express
+- **Front-end** : EJS
+- **Base de données** : Microsoft SQL Server
+- **ORM** : Sequelize
+- **Tests** : Vitest, Supertest
+- **Conteneurisation** : Docker
 
-# SQL Server est accessible sur localhost:1433
+### Sécurité
 
+- Helmet
+- express-session (cookies sécurisés)
+- CSRF (csurf)
+- Rate limiting (anti brute force)
+- bcrypt (hash des mots de passe)
+- sanitation XSS
 
-# Commandes Docker utiles
-docker compose up -d        # démarrer
-docker compose down         # arrêter
-docker ps                   # vérifier
-docker logs mini-crm-sqlserver
+---
 
+## Fonctionnalités
 
+- authentification (inscription / connexion) ;
+- CRUD clients ;
+- CRUD rendez-vous ;
+- association clients ↔ rendez-vous ;
+- protection des routes ;
+- contrôle d’accès (propriétaire) ;
+- gestion des erreurs et messages utilisateur.
 
+---
 
-HELP ME!
-#####
-# Démarrer le conteneur SQL Server
-docker run -e "ACCEPT_EULA=Y" \
-  -e "SA_PASSWORD=XXXXXXXXXX" \
-  -p 1433:1433 \
-  --name mini-crm-sqlserver \
-  -d mcr.microsoft.com/mssql/server:2022-latest
+## Structure du projet
 
-# Supprimer l’ancien conteneur
-docker rm -f mini-crm-sqlserver
-
-# Vérifier que le conteneur tourne :
-docker ps
-
-
-# Créer la base mini_crm
-# Option recommandée : VS Code (extension SQL Server)
-Ouvre VS Code
-Clique sur l’icône SQL Server
-Ajoute une connexion avec :
-Server name : localhost,1433
-Authentication : SQL Login
-User : sa
-Password : XXXXXXXXXXX
-Trust server certificate
-Database : laisser vide
-Clique sur New Query
-Exécute :
-CREATE DATABASE mini_crm;
-GO
-
-#####
+```txt
+controllers/
+middlewares/
+models/
+routes/
+views/
+public/
+test/
+app.js
+server.js
+docker-compose.yml
