@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     volumes:
       - sqlserver_data:/var/opt/mssql
-      
+
   app:
     build:
       context: .
@@ -21,6 +21,7 @@ services:
       - .env
     depends_on:
       - sqlserver
+    restart: unless-stopped
 
 volumes:
   sqlserver_data:
