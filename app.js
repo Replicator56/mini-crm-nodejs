@@ -41,6 +41,7 @@ app.use(
     max: 500,
     standardHeaders: true,
     legacyHeaders: false,
+    message: "Trop de requêtes, veuillez réessayer plus tard."
   })
 );
 
