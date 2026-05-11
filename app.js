@@ -27,7 +27,7 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 if (!process.env.SESSION_SECRET || !process.env.SESSION_SECRET.trim()) {
   throw new Error(
     `La variable d'environnement SESSION_SECRET est obligatoire (env=${NODE_ENV}).\n` +
-      'Veuillez la définir dans votre fichier .env.'
+    'Veuillez la définir dans votre fichier .env.'
   );
 }
 
@@ -45,10 +45,15 @@ app.use(
   })
 );
 
+const getAuthLimiterKey = (req) => req.ip;
+
 // Limite spécifique login/register
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getAuthLimiterKey,
   message: 'Trop de tentatives, réessayez dans 15 minutes.',
 });
 
@@ -183,7 +188,7 @@ app.post('/register', authLimiter, async (req, res) => {
   }
 });
 
-app.get('/login', authLimiter, (req, res) => {
+app.get('/login', (req, res) => {
   res.render('login', { title: 'Connexion' });
 });
 
@@ -208,6 +213,11 @@ app.post('/login', authLimiter, async (req, res) => {
       email: user.email,
     };
 
+    // Réinitialise le compteur de rate limiting
+    if (authLimiter.resetKey) {
+      authLimiter.resetKey(getAuthLimiterKey(req));
+    }
+
     req.flash('success', 'Connecté avec succès.');
     return res.redirect('/clients');
   } catch (err) {
@@ -227,12 +237,12 @@ app.get('/clients', ensureAuthenticated, async (req, res) => {
 
   const where = q
     ? {
-        [Op.or]: [
-          { name: { [Op.like]: `%${q}%` } },
-          { email: { [Op.like]: `%${q}%` } },
-          { phone: { [Op.like]: `%${q}%` } },
-        ],
-      }
+      [Op.or]: [
+        { name: { [Op.like]: `%${q}%` } },
+        { email: { [Op.like]: `%${q}%` } },
+        { phone: { [Op.like]: `%${q}%` } },
+      ],
+    }
     : {};
 
   const clients = await Client.findAll({
