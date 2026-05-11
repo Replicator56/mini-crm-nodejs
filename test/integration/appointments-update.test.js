@@ -1,9 +1,15 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app.js";
 import { register } from "../helpers/auth.js";
 import { extractCsrfToken } from "../helpers/csrf.js";
-import { Appointment, Client } from "../../models/index.js";
+import { sequelize, Appointment, Client } from "../../models/index.js";
+
+function futureDate(daysToAdd = 10) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysToAdd);
+  return d.toISOString().split("T")[0];
+}
 
 async function createClientViaUI(agent, { name, email }) {
   const page = await agent.get("/clients/new");
@@ -32,7 +38,7 @@ async function createAppointmentViaUI(agent, { date, time, notes, clientIds }) {
     date,
     time,
     notes,
-    clientIds, // tableau d'ids
+    clientIds,
   });
 
   expect(res.status).toBe(302);
@@ -40,64 +46,65 @@ async function createAppointmentViaUI(agent, { date, time, notes, clientIds }) {
 }
 
 async function getAppointmentParticipantsIds(appointmentId) {
-  // grâce au belongsToMany, getClients() existe
   const appt = await Appointment.findByPk(appointmentId);
   const clients = await appt.getClients({ order: [["id", "ASC"]] });
-  return clients.map(c => c.id);
+  return clients.map((c) => c.id);
 }
 
 describe("PUT /appointments/:id — update (DB-driven)", () => {
+  beforeEach(async () => {
+    await sequelize.sync({ force: true });
+  });
+
   it("met à jour datetime + notes + participants (pivot)", async () => {
     const agent = request.agent(app);
 
-    // 1) Register => session active
     const reg = await register(agent, {
       name: "User1",
       email: "u1@example.com",
       password: "Str0ng!Passw0rd",
     });
+
     expect(reg.status).toBe(302);
     expect(reg.headers.location).toBe("/clients");
 
-    // 2) Créer 2 clients via UI
     await createClientViaUI(agent, { name: "Client A", email: "a@example.com" });
     await createClientViaUI(agent, { name: "Client B", email: "b@example.com" });
 
-    // 3) Récupérer IDs DB-driven
     const clients = await Client.findAll({ order: [["id", "ASC"]] });
     expect(clients.length).toBeGreaterThanOrEqual(2);
+
     const clientAId = clients[0].id;
     const clientBId = clients[1].id;
 
-    // 4) Créer un RDV avec 1 participant
     await createAppointmentViaUI(agent, {
-      date: "2026-02-16",
+      date: futureDate(10),
       time: "10:30",
       notes: "initial",
       clientIds: [String(clientAId)],
     });
 
-    // 5) Récupérer RDV ID DB-driven
     const rdvBefore = await Appointment.findOne({ order: [["id", "DESC"]] });
     expect(rdvBefore).toBeTruthy();
+
     const rdvId = rdvBefore.id;
 
-    // 6) Vérifier participants avant
     const beforeParticipants = await getAppointmentParticipantsIds(rdvId);
     expect(beforeParticipants).toEqual([clientAId]);
 
-    // 7) GET edit pour CSRF
     const editPage = await agent.get(`/appointments/${rdvId}/edit`);
     expect(editPage.status).toBe(200);
+
     const csrf = extractCsrfToken(editPage.text);
 
-    // 8) Update : change date/time + notes + participants (A+B)
+    const updateDate = futureDate(11);
+
     const updateRes = await agent
       .put(`/appointments/${rdvId}`)
       .type("form")
       .send({
         _csrf: csrf,
-        date: "2026-02-17",
+        date: updateDate,
         time: "14:45",
         notes: "updated",
         clientIds: [String(clientAId), String(clientBId)],
@@ -106,20 +113,20 @@ describe("PUT /appointments/:id — update (DB-driven)", () => {
     expect(updateRes.status).toBe(302);
     expect(updateRes.headers.location).toBe("/appointments");
 
-    // 9) Vérifier DB (datetime + notes)
     const rdvAfter = await Appointment.findByPk(rdvId);
     expect(rdvAfter.notes).toBe("updated");
 
     const d = new Date(rdvAfter.datetime);
-    expect(d.getFullYear()).toBe(2026);
-    expect(d.getMonth()).toBe(1); // Feb => 1 (0-based)
-    expect(d.getDate()).toBe(17);
+    const expectedDate = new Date(updateDate);
+
+    expect(d.getFullYear()).toBe(expectedDate.getFullYear());
+    expect(d.getMonth()).toBe(expectedDate.getMonth());
+    expect(d.getDate()).toBe(expectedDate.getDate());
     expect(d.getHours()).toBe(14);
     expect(d.getMinutes()).toBe(45);
 
-    // 10) Vérifier pivot (participants)
     const afterParticipants = await getAppointmentParticipantsIds(rdvId);
-    expect(afterParticipants).toEqual([clientAId, clientBId].sort((a,b)=>a-b));
+    expect(afterParticipants).toEqual([clientAId, clientBId].sort((a, b) => a - b));
   });
 
   it("refuse date/heure invalide (redirect edit) et ne modifie pas la DB", async () => {
@@ -132,10 +139,11 @@ describe("PUT /appointments/:id — update (DB-driven)", () => {
     });
 
     await createClientViaUI(agent, { name: "Client A", email: "a2@example.com" });
+
     const [clientA] = await Client.findAll({ order: [["id", "ASC"]] });
 
     await createAppointmentViaUI(agent, {
-      date: "2026-02-16",
+      date: futureDate(10),
       time: "10:30",
       notes: "initial",
       clientIds: [String(clientA.id)],
@@ -174,10 +182,11 @@ describe("PUT /appointments/:id — update (DB-driven)", () => {
     });
 
     await createClientViaUI(agent, { name: "Client A", email: "a3@example.com" });
+
     const [clientA] = await Client.findAll({ order: [["id", "ASC"]] });
 
     await createAppointmentViaUI(agent, {
-      date: "2026-02-16",
+      date: futureDate(10),
       time: "10:30",
       notes: "initial",
       clientIds: [String(clientA.id)],
@@ -191,10 +200,10 @@ describe("PUT /appointments/:id — update (DB-driven)", () => {
 
     const res = await agent.put(`/appointments/${rdvId}`).type("form").send({
       _csrf: csrf,
-      date: "2026-02-17",
+      date: futureDate(11),
       time: "12:00",
       notes: "should-not-apply",
-      clientIds: [], // cas testé
+      clientIds: [],
     });
 
     expect(res.status).toBe(302);
@@ -208,8 +217,8 @@ describe("PUT /appointments/:id — update (DB-driven)", () => {
   });
 
   it("refuse l’update si pas propriétaire (owner check) et ne modifie rien", async () => {
-    // owner
     const agent1 = request.agent(app);
+
     await register(agent1, {
       name: "Owner",
       email: "owner@example.com",
@@ -217,10 +226,11 @@ describe("PUT /appointments/:id — update (DB-driven)", () => {
     });
 
     await createClientViaUI(agent1, { name: "Client A", email: "oa@example.com" });
+
     const [clientA] = await Client.findAll({ order: [["id", "ASC"]] });
 
     await createAppointmentViaUI(agent1, {
-      date: "2026-02-16",
+      date: futureDate(10),
       time: "10:30",
       notes: "owner-rdv",
       clientIds: [String(clientA.id)],
@@ -229,20 +239,18 @@ describe("PUT /appointments/:id — update (DB-driven)", () => {
     const rdv = await Appointment.findOne({ order: [["id", "DESC"]] });
     const rdvId = rdv.id;
 
-    // attacker
     const agent2 = request.agent(app);
+
     await register(agent2, {
       name: "Attacker",
       email: "attacker@example.com",
       password: "Str0ng!Passw0rd",
     });
 
-    // tente d'accéder à edit => le middleware redirige /appointments
     const edit = await agent2.get(`/appointments/${rdvId}/edit`);
     expect(edit.status).toBe(302);
     expect(edit.headers.location).toBe("/appointments");
 
-    // Vérifier DB inchangée
     const rdvAfter = await Appointment.findByPk(rdvId);
     expect(rdvAfter.notes).toBe("owner-rdv");
 

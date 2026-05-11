@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import session from 'express-session';
 import flash from 'connect-flash';
 import bcrypt from 'bcrypt';
@@ -22,40 +22,45 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const NODE_ENV = process.env.NODE_ENV || 'development';
+const isTest = NODE_ENV === 'test';
 
 // --- Vérification qu'un SESSION_SECRET est défini dans le .env ---
 if (!process.env.SESSION_SECRET || !process.env.SESSION_SECRET.trim()) {
   throw new Error(
     `La variable d'environnement SESSION_SECRET est obligatoire (env=${NODE_ENV}).\n` +
-    'Veuillez la définir dans votre fichier .env.'
+      'Veuillez la définir dans votre fichier .env.'
   );
 }
 
 // --- Sécurité : Helmet + Rate limit ---
 app.use(helmet());
 
-// Limite globale
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 500,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: "Trop de requêtes, veuillez réessayer plus tard."
-  })
-);
+// Limite globale désactivée en environnement de test
+if (!isTest) {
+  app.use(
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 500,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: 'Trop de requêtes, veuillez réessayer plus tard.',
+    })
+  );
+}
 
-const getAuthLimiterKey = (req) => req.ip;
+const getAuthLimiterKey = (req) => ipKeyGenerator(req.ip);
 
-// Limite spécifique login/register
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: getAuthLimiterKey,
-  message: 'Trop de tentatives, réessayez dans 15 minutes.',
-});
+// Limite spécifique login/register désactivée en environnement de test
+const authLimiter = isTest
+  ? (req, res, next) => next()
+  : rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 3,
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: getAuthLimiterKey,
+      message: 'Trop de tentatives, réessayez dans 15 minutes.',
+    });
 
 // --- Views & layouts ---
 app.set('view engine', 'ejs');
@@ -84,7 +89,7 @@ app.use(
       httpOnly: true,
       secure: NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000, // 1 jour
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
@@ -213,13 +218,12 @@ app.post('/login', authLimiter, async (req, res) => {
       email: user.email,
     };
 
-    // Réinitialise le compteur de rate limiting
-    if (authLimiter.resetKey) {
+    if (!isTest && authLimiter.resetKey) {
       authLimiter.resetKey(getAuthLimiterKey(req));
     }
 
     req.flash('success', 'Connecté avec succès.');
-    return res.redirect('/clients');
+    return res.redirect('/appointments');
   } catch (err) {
     console.error('Login error:', err);
     req.flash('error', 'Erreur lors de la connexion.');
@@ -237,12 +241,12 @@ app.get('/clients', ensureAuthenticated, async (req, res) => {
 
   const where = q
     ? {
-      [Op.or]: [
-        { name: { [Op.like]: `%${q}%` } },
-        { email: { [Op.like]: `%${q}%` } },
-        { phone: { [Op.like]: `%${q}%` } },
-      ],
-    }
+        [Op.or]: [
+          { name: { [Op.like]: `%${q}%` } },
+          { email: { [Op.like]: `%${q}%` } },
+          { phone: { [Op.like]: `%${q}%` } },
+        ],
+      }
     : {};
 
   const clients = await Client.findAll({

@@ -12,6 +12,7 @@ services:
       - sqlserver_data:/var/opt/mssql
 
   app:
+    container_name: mini-crm-app
     build:
       context: .
       dockerfile: Dockerfile
